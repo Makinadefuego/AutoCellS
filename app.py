@@ -1,5 +1,6 @@
 from flask import Flask, request, render_template, make_response, redirect
 from werkzeug.utils import secure_filename
+import os
 
 
 app = Flask(__name__)
@@ -39,4 +40,4 @@ def upload():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=6969)
+    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5800)))
