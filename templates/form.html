@@ -1,0 +1,30 @@
+<!-- Formulario para enviar la imagen o carpeta -->
+<form class="" action="/upload" method="post" enctype="multipart/form-data">
+
+    <div class="mb-3">
+        <label for="classification_name">Nombre tu clasificación:</label>
+        <input  class="form-control" type="text" name="classification_name">
+    
+    </div>
+
+    <div class="mb-3">
+        <label for="file">Selecciona tus imagenes:</label>
+        <input class="form-control" type="file" name="file" multiple>
+    
+    </div>
+
+    <div class="mb-3">
+        <label for="model_name">Selecciona el modelo:</label>
+        <select name="model_name" class="form-control">
+            <option value="resnet50">ResNet50</option>
+            <option value="vgg16">VGG16</option>
+            <option value="inception_v3">InceptionV3</option>
+        </select>
+    </div>
+
+
+    <div class="mb-3">
+        <button class="btn btn-primary" type="submit" value="upload">Enviar</button>
+    </div>
+
+</form>

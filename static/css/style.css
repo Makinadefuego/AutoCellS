@@ -1,0 +1,9 @@
+
+body{
+
+    /* Hacer que abarque toda la página hasta el final y no que se adapte al contenido */
+    
+    height: 100vh;
+    margin: 0;
+    
+}
