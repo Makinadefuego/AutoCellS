@@ -25,7 +25,7 @@ def segment_image(image_path, model):
 
     # Cargar el modelo de CNN 
     # (adapta la ruta a tu modelo)
-    model = load_model('models/best_model.keras')
+    model = load_model('app/models/best_model.keras ')
 
     print(model)
 
