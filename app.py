@@ -4,8 +4,10 @@ import os
 import json
 from models.predict import segment_image
 from models.preprocess import preprocess_images
-from models.segmentation import segment_dataset 
+from models.segmentation import segment_dataset
 from models.classify import clasificar_celula   
+import boto3
+from botocore.exceptions import NoCredentialsError
 
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
@@ -20,12 +22,31 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'tiff'}
 # 3: Anafase
 # 4: Telofase
 
-
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Función para descargar archivo desde S3
+def download_file_from_s3(bucket_name, s3_file, local_file):
+    s3 = boto3.client('s3', region_name=os.getenv('AWS_REGION'))
+    try:
+        s3.download_file(bucket_name, s3_file, local_file)
+        print("Download Successful")
+    except FileNotFoundError:
+        print("The file was not found")
+    except NoCredentialsError:
+        print("Credentials not available")
+
+# Configurar la descarga del modelo si no está presente
+bucket_name = 'tu-bucket-name'
+s3_file = 'best_model.keras'
+local_file = 'models/best_model.keras'
+
+if not os.path.exists(local_file):
+    os.makedirs(os.path.dirname(local_file), exist_ok=True)
+    download_file_from_s3(bucket_name, s3_file, local_file)
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
@@ -61,11 +82,9 @@ def handle_upload():
         # Ejecuta la segmentación:
         segment_dataset(classification_folder)
         
-        #Ejecuta el preprocesamiento:
+        # Ejecuta el preprocesamiento:
         preprocess_images(classification_folder)
 
-        # Ejecuta la clasificación:
-         # --- Clasificación ---
         # Ejecuta la clasificación:
         cells_dir = os.path.join(classification_folder, 'preprocessed')
         cell_classes = {}
@@ -89,18 +108,12 @@ def handle_upload():
         classification_json_path = os.path.join(classification_folder, 'classification.json')
         with open(classification_json_path, 'w') as f:
             json.dump(cell_classes, f)
-
-
-
     else:
         flash('Invalid file extension')
         return redirect(request.url)
 
     flash('File successfully uploaded')
-    
-
     return redirect(url_for('my_classifications'))
-    
 
 @app.route('/myclassifications')
 def my_classifications():
@@ -114,8 +127,6 @@ def review_classification(classification_name):
     with open(json_path, 'r') as f:
         classification_data = json.load(f)
     return render_template('review_classification.html', classification_name=classification_name, classification_data=classification_data)
-
-
 
 @app.route('/save_classification/<classification_name>', methods=['POST'])
 def save_classification(classification_name):
@@ -160,7 +171,6 @@ def segment():
     else:
         return render_template('predict.html')
 
-
 @app.route('/uploads/<classification_name>/<path:filename>')
 def uploaded_file(classification_name, filename):
     try:
@@ -179,7 +189,7 @@ def clasificacion_interactiva(classification_name):
     with open(json_path, 'r') as f:
         classification_data = json.load(f)
     
-    #Se cargan las imagenes de microscopio que estan en una carpeta antes de preprocessed
+    # Se cargan las imagenes de microscopio que estan en una carpeta antes de preprocessed
     original_images = []
     
     for file in os.listdir(classification_folder):
@@ -190,10 +200,20 @@ def clasificacion_interactiva(classification_name):
     print(classification_data)
     print(original_images)
 
-
     return render_template('clasificacion_interactiva.html', 
                            classification_name=classification_name, 
                            classification=classification_data,
                             original_images=original_images)
+
 if __name__ == "__main__":
+    #Se descarga el modelo de clasificación si no está presente
+    bucket_name = 'autocellsstorage'
+    s3_file = 'best_model.keras'
+
+    local_file = 'models/best_model.keras'
+
+    if not os.path.exists(local_file):
+        os.makedirs(os.path.dirname(local_file), exist_ok=True)
+        download_file_from_s3(bucket_name, s3_file, local_file)
+        
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5800)))
