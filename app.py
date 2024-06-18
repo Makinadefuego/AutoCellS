@@ -5,6 +5,16 @@ from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 S3_BUCKET = 'autocellsstorage'
 S3_KEY = 'best_model.keras'
 LOCAL_FILE_PATH = 'models/best_model.keras'
+# Función para listar archivos en un directorio
+def list_files_in_directory(directory):
+    try:
+        files = os.listdir(directory)
+        print(f"Archivos en el directorio {directory}: {files}")
+    except FileNotFoundError:
+        print(f"El directorio {directory} no existe.")
+    except Exception as e:
+        print(f"Error al listar archivos en {directory}: {str(e)}")
+
 
 # Descargar el archivo desde S3 si no está presente localmente
 def download_file_from_s3(bucket, key, local_path):
@@ -25,6 +35,17 @@ def download_file_from_s3(bucket, key, local_path):
 
 # Descargar el archivo antes de que cualquier otro código lo necesite
 download_file_from_s3(S3_BUCKET, S3_KEY, LOCAL_FILE_PATH)
+
+# Listar archivos en el directorio actual y en el directorio de modelos
+list_files_in_directory('.')
+list_files_in_directory('models')
+
+
+# Asegurarse de que el archivo existe
+if not os.path.exists(LOCAL_FILE_PATH):
+    print(f"Error: el archivo {LOCAL_FILE_PATH} no existe después de la descarga")
+else:
+    print(f"El archivo {LOCAL_FILE_PATH} está presente")
 
 from flask import Flask, request, render_template, redirect, url_for, send_from_directory, flash, jsonify
 from werkzeug.utils import secure_filename
