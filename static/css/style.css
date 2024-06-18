@@ -1,9 +1,116 @@
+/* Variables CSS */
+:root {
+    --primario: #3B413C;
+    --secundario: #94D1BE; 
+    --fondo: #f4f4f4;
+    --texto-claro:  #9DB5B2;
+    --texto-oscuro: #3B413C; 
+}
 
-body{
+body {
+    font-family: 'Lato', sans-serif;
+    background-color: var(--fondo);
+    color: var(--texto-oscuro);
+}
 
-    /* Hacer que abarque toda la página hasta el final y no que se adapte al contenido */
-    
-    height: 100vh;
+/* Estilos del formulario */
+.form-label {
+    color: var(--texto-oscuro);
+    /* Texto de color oscuro */
+    text-align: left;
+    font-weight: bold;}
+
+.form-control {
+    background-color:  var(--fondo);
+    border: 1px solid #ced4da;
+}
+
+.btn-primary {
+    background-color: var(--primario);
+    border-color: var(--primario);
+    color: white;
+}
+
+/* Estilos de Dropzone */
+.dropzone {
+    cursor :grab;
+    text-decoration-color: #3B413C;
+    color: #3B413C;
+}
+
+.dropzone .dz-message {
+    font-size: 1.5em;
     margin: 0;
+    color: var(--texto-oscuro);
+}
+
+.dropzone .dz-preview {
+    margin: 10px;
+    display: inline-block;
+}
+
+.dropzone .dz-preview .dz-image {
+    width: 100%;
+    height: 100%;
+    border-radius: 5px;
+}
+
+.dropzone .dz-preview .dz-details .dz-filename {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dropzone .dz-preview .dz-progress {
+    display: none;
+}
+
+.dropzone .dz-preview .dz-error-message {
+    display: none;
+}
+
+.dropzone .dz-preview .dz-success-mark {
+    display: none;
+}
+
+.dropzone .dz-preview .dz-error-mark {
+    display: none;
+}
+
+
+/* Estilos de la tabla */
+.table {
+    background-color: white;
+}
+
+
+/* Estilos para la pantalla de carga */
+.overlay {
+    position: fixed;  /* Posición fija para cubrir toda la pantalla */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);  /* Más oscuro: 70% de opacidad */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column; /* Alinea los elementos en columna */
+    z-index: 1000; /* Asegúrate de que esté por encima de otros elementos */
     
+}
+
+.overlay h1 {
+    color: white;
+    font-size: 2em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+
+
+.overlay .spinner-border {
+    width: 4rem;
+    height: 4rem;
+    color: white; /* Spinner blanco */ 
 }
