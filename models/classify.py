@@ -3,7 +3,7 @@ from tensorflow.keras.preprocessing import image
 import numpy as np
 
 # Cargar el modelo de clasificación (ajusta la ruta si es necesario)
-modelo_clasificacion = load_model('models/best_model.keras')
+modelo_clasificacion = load_model('./models/best_model.keras')
 
 print(modelo_clasificacion)
 img_width, img_height = 256, 256
