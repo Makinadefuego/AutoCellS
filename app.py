@@ -1,3 +1,31 @@
+import os
+import boto3
+from botocore.exceptions import NoCredentialsError, PartialCredentialsError
+
+S3_BUCKET = 'autocellsstorage'
+S3_KEY = 'best_model.keras'
+LOCAL_FILE_PATH = 'models/best_model.keras'
+
+# Descargar el archivo desde S3 si no está presente localmente
+def download_file_from_s3(bucket, key, local_path):
+    s3 = boto3.client('s3', aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'), aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'))
+    try:
+        if not os.path.exists(local_path):
+            os.makedirs(os.path.dirname(local_path), exist_ok=True)
+            s3.download_file(bucket, key, local_path)
+            print(f"Archivo descargado desde S3: {local_path}")
+        else:
+            print(f"Archivo ya existe: {local_path}")
+    except NoCredentialsError:
+        print("Error: No se encontraron credenciales de AWS.")
+    except PartialCredentialsError:
+        print("Error: Credenciales incompletas de AWS.")
+    except Exception as e:
+        print(f"Error al descargar el archivo: {str(e)}")
+
+# Descargar el archivo antes de que cualquier otro código lo necesite
+download_file_from_s3(S3_BUCKET, S3_KEY, LOCAL_FILE_PATH)
+
 from flask import Flask, request, render_template, redirect, url_for, send_from_directory, flash, jsonify
 from werkzeug.utils import secure_filename
 import os
@@ -5,9 +33,7 @@ import json
 from models.predict import segment_image
 from models.preprocess import preprocess_images
 from models.segmentation import segment_dataset
-from models.classify import clasificar_celula   
-import boto3
-from botocore.exceptions import NoCredentialsError
+from models.classify import clasificar_celula  
 
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
@@ -27,26 +53,6 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-# Función para descargar archivo desde S3
-def download_file_from_s3(bucket_name, s3_file, local_file):
-    s3 = boto3.client('s3', region_name=os.getenv('AWS_REGION'))
-    try:
-        s3.download_file(bucket_name, s3_file, local_file)
-        print("Download Successful")
-    except FileNotFoundError:
-        print("The file was not found")
-    except NoCredentialsError:
-        print("Credentials not available")
-
-# Configurar la descarga del modelo si no está presente
-bucket_name = 'tu-bucket-name'
-s3_file = 'best_model.keras'
-local_file = 'models/best_model.keras'
-
-if not os.path.exists(local_file):
-    os.makedirs(os.path.dirname(local_file), exist_ok=True)
-    download_file_from_s3(bucket_name, s3_file, local_file)
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
@@ -206,14 +212,4 @@ def clasificacion_interactiva(classification_name):
                             original_images=original_images)
 
 if __name__ == "__main__":
-    #Se descarga el modelo de clasificación si no está presente
-    bucket_name = 'autocellsstorage'
-    s3_file = 'best_model.keras'
-
-    local_file = 'models/best_model.keras'
-
-    if not os.path.exists(local_file):
-        os.makedirs(os.path.dirname(local_file), exist_ok=True)
-        download_file_from_s3(bucket_name, s3_file, local_file)
-        
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5800)))
