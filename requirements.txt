@@ -69,7 +69,7 @@ PyQt6-sip==13.6.0
 pyqtgraph==0.13.4
 python-dateutil==2.9.0.post0
 QtPy==2.4.1
-requests==2.31.0
+requests==2.32.2
 rich==13.7.1
 roifile==2024.3.20
 rsa==4.9
