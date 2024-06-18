@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clasificación</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      /* Estilos para las pestañas */
+      .nav-tabs .nav-link {
+        cursor: pointer;
+      }
+
+      /* Estilos para el contenedor de la imagen con zoom */
+      #zoomable-image-container {
+        position: relative;
+        overflow: hidden;
+      }
+
+      #zoomable-image {
+        width: 100%;
+        height: auto;
+        transform-origin: top left;
+        /* Para que el zoom se origine desde la esquina superior izquierda */
+      }
+    </style>
+
+<script src="https://cdn.jsdelivr.net/npm/panzoom@9.4.0/dist/panzoom.min.js"></script>
+  </head>
+  <body>
+    {% include 'navbar.html' %}
+
+    <div class="container mt-5">
+      <h2>Clasificación de la imagen: {{ classification_name }}</h2>
+      <div class="row">
+        <div class="col-md-3">
+          <h4>Imágenes Segmentadas</h4>
+          <!-- Son las imágenes segmentadas que se deben mostrar -->
+          <div id="segmented-image-list">
+            {% for segmented_image in original_images %}
+            <button
+              type="button"
+              class="btn btn-outline-primary mb-2"
+              data-filename="{{ segmented_image.filename }}"
+            >
+              {{ segmented_image }}
+            </button>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <h4>Imagen Seleccionada</h4>
+                
+<div id="zoomable-image-container">
+  <canvas id="main-image-canvas"></canvas>
+  <canvas id="mask-canvas" style="display: none;"></canvas>
+  <div id="cell-highlight" style="position: absolute; border: 2px solid red; display: none;"></div>
+</div>
+
+    
+        </div>
+
+        <div class="col-md-3">
+          <h4>Imágenes Individuales</h4>
+          <div id="individual-image-list">
+            <!-- Las imágenes individuales se cargan dinámicamente con JavaScript -->
+          </div>
+
+          <h4>Clasificación</h4>
+          <ul class="nav nav-tabs" id="classification-tabs" role="tablist">
+            <!-- Se mantiene igual -->
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link active"
+                id="interfase-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#interfase"
+                type="button"
+                role="tab"
+                aria-controls="interfase"
+                aria-selected="true"
+                data-class="Interfase"
+              >
+                Interfase
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link"
+                id="profase-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#profase"
+                type="button"
+                role="tab"
+                aria-controls="profase"
+                aria-selected="false"
+                data-class="Profase"
+              >
+                Profase
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link"
+                id="metafase-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#metafase"
+                type="button"
+                role="tab"
+                aria-controls="metafase"
+                aria-selected="false"
+                data-class="Metafase"
+              >
+                Metafase
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link"
+                id="anafase-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#anafase"
+                type="button"
+                role="tab"
+                aria-controls="anafase"
+                aria-selected="false"
+                data-class="Anafase"
+              >
+                Anafase
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link"
+                id="telofase-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#telofase"
+                type="button"
+                role="tab"
+                aria-controls="telofase"
+                aria-selected="false"
+                data-class="Telofase"
+              >
+                Telofase
+              </button>
+            </li>
+          </ul>
+
+          <div class="tab-content" id="classification-tabs-content">
+            <div
+              class="tab-pane fade show active"
+              id="interfase"
+              role="tabpanel"
+              aria-labelledby="interfase-tab"
+            >
+              <div class="thumbnail-grid" id="interfase-grid">
+                <!-- Las miniaturas se cargan dinámicamente con JavaScript -->
+              </div>
+            </div>
+            <div
+              class="tab-pane fade"
+              id="profase"
+              role="tabpanel"
+              aria-labelledby="profase-tab"
+            >
+              <div class="thumbnail-grid" id="profase-grid">
+                <!-- Las miniaturas se cargan dinámicamente con JavaScript -->
+              </div>
+            </div>
+            <div
+              class="tab-pane fade"
+              id="metafase"
+              role="tabpanel"
+              aria-labelledby="metafase-tab"
+            >
+              <div class="thumbnail-grid" id="metafase-grid">
+                <!-- Las miniaturas se cargan dinámicamente con JavaScript -->
+              </div>
+            </div>
+            <div
+              class="tab-pane fade"
+              id="anafase"
+              role="tabpanel"
+              aria-labelledby="anafase-tab"
+            >
+              <div class="thumbnail-grid" id="anafase-grid">
+                <!-- Las miniaturas se cargan dinámicamente con JavaScript -->
+              </div>
+            </div>
+            <div
+              class="tab-pane fade"
+              id="telofase"
+              role="tabpanel"
+              aria-labelledby="telofase-tab"
+            >
+              <div class="thumbnail-grid" id="telofase-grid">
+                <!-- Las miniaturas se cargan dinámicamente con JavaScript -->
+              </div>
+            </div>
+          </div>
+
+          <h4>Detalles</h4>
+          <div id="image-details">
+            <!-- Aquí se mostrarán los detalles de la imagen y las células -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+    const segmentedImageList = document.getElementById('segmented-image-list');
+    const selectedImage = document.getElementById('selected-image');
+    const individualImageList = document.getElementById('individual-image-list');
+    const classificationTabs = document.getElementById('classification-tabs');
+    const classificationTabsContent = document.getElementById('classification-tabs-content');
+    const imageDetails = document.getElementById('image-details');
+
+
+    var imagen_actual = null
+
+    // Obtén los datos de la clasificación desde la variable global
+    const classificationData = JSON.parse('{{ classification | tojson | safe }}');
+
+    // Función para cargar las imágenes segmentadas
+    function loadSegmentedImages() {
+        const original_images = {{ original_images | tojson | safe }};
+        
+        segmentedImageList.innerHTML = ''; // Limpiar la lista
+        for (const filename of original_images) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'btn btn-outline-primary mb-2';
+            
+            button.textContent = filename; // Muestra el nombre del archivo
+
+            imagen_actual = filename
+
+            console.log(imagen_actual)
+            segmentedImageList.appendChild(button);
+        }
+
+        // Agregar evento de clic a los botones de imágenes segmentadas
+        const segmentedImageButtons = segmentedImageList.querySelectorAll('button');
+        segmentedImageButtons.forEach(button => {
+            button.addEventListener('click', function () {
+              loadSelectedImage(imagen_actual)
+            });
+        });
+    }
+
+    // Función para cargar la imagen seleccionada
+    function loadSelectedImage(filename) {
+        console.log("Cargando imagen seleccionada")
+        // Limpiar la lista de imágenes individuales
+        individualImageList.innerHTML = '';
+
+        // Crear un nuevo objeto Image
+        const image = new Image();
+        image.src = `/uploads/{{ classification_name }}/${filename}`;
+        image.alt = filename;
+        image.id = 'zoomable-image';
+
+         // Crear un nuevo objeto Image
+    originalImage = new Image(); // <-- Asignar la imagen a la variable global
+    originalImage.src = `/uploads/{{ classification_name }}/${filename}`;
+
+        // Esperar a que la imagen se cargue
+        image.onload = () => {
+
+            
+            // Obtener el canvas principal y su contexto
+            const mainImageCanvas = document.getElementById('main-image-canvas');
+            const mainImageContext = mainImageCanvas.getContext('2d');
+            mainImageCanvas.width = image.width;
+            mainImageCanvas.height = image.height;
+
+
+            // Dibujar la imagen en el canvas
+            mainImageContext.drawImage(image, 0, 0);
+
+            console.log("Imagen cargada")
+            console.log(mainImageCanvas.width)
+            console.log(mainImageCanvas.height)
+
+            // Actualizar las pestañas de clasificación
+            updateClassificationTabs(filename);
+            panzoom(mainImageCanvas, {
+              maxZoom: 2,
+              minZoom: 0.5,
+              zoomSpeed: 0.065,
+              smoothScroll: false,
+              contain: 'outside',
+            });
+        };
+
+        
+    }
+
+    // Función para actualizar las pestañas de clasificación con las imágenes correspondientes
+    function updateClassificationTabs(filename) {
+      console.log("Actualizando pestañas de clasificación")
+        const tabs = classificationTabs.querySelectorAll('button.nav-link');
+        tabs.forEach(tab => {
+            const selectedClass = tab.dataset.class;
+            const cellIds = getCellIdsFromClassification(filename, selectedClass);
+            const imageGrid = document.getElementById(`${selectedClass.toLowerCase()}-grid`);
+
+            // Limpiar la cuadrícula de imágenes
+            imageGrid.innerHTML = '';
+            console.log(cellIds)
+            cellIds.forEach(cellId => {
+                const cellImage = document.createElement('img');
+                cellImage.src = `/uploads/{{ classification_name }}/preprocessed/${cellId}`;
+                console.log(cellImage.src)
+                cellImage.alt = `${imagen_actual}_${cellId}.png`;
+                cellImage.className = 'img-fluid rounded thumbnail';
+
+                // Actualizar los detalles de la célula al hacer clic en ella
+                cellImage.addEventListener('click', function () {
+
+                    imageDetails.innerHTML = `
+                        <h5>Detalles de la Célula</h5>
+                        <p><strong>Imagen:</strong> ${imagen_actual}</p>
+                        <p><strong>Célula:</strong> ${cellId}</p>
+                        <p><strong>Clase:</strong> ${selectedClass}</p>
+                    `;
+                  //Se le agrega _mask al final para que se muestre la máscara de la célula, pero antes se le quita la extensión .png
+                  const cellMask = cellId.replace('.png', '_mask.png');
+                  console.log(cellMask)
+                  highlightCell(cellMask);
+                  
+                });
+
+                imageGrid.appendChild(cellImage);
+            });
+        });
+    }
+
+    // Función para obtener los ID de las células de una clase específica en una imagen
+function getCellIdsFromClassification(filename, selectedClass) {
+    const cellName = [];
+
+    // Obtener el objeto de la imagen actual
+    const imageData = classificationData;
+
+    console.log(imageData)
+    // Iterar sobre los datos de la imagen
+    for (const cellId in imageData) {
+        // Verificar si la clase de la célula coincide con la seleccionada, nos aseguramos que solo sean las imagenes y no las mascaras _mask
+        if (imageData[cellId].class === selectedClass && !cellId.includes("_mask")) {
+            cellName.push(cellId);
+        }
+    }
+
+    console.log("Retornando cellIds" )
+
+    console.log(cellName)
+
+    return cellName;
+}
+    // Cargar la primera imagen segmentada
+    if (segmentedImageList.children.length > 0) {
+        const firstImage = segmentedImageList.children[0];
+        var filename = firstImage.innerHTML;
+        //Se limpian todos los espacios en blanco (tabs, saltos de línea, etc.
+        filename = filename.replace(/\s/g, '');
+
+
+        console.log(filename)
+        loadSelectedImage(filename);
+    }
+
+    // Cargar las imágenes segmentadas
+    loadSegmentedImages();
+
+    //
+
+    function highlightCell(cellId) {
+    // 1. Obtener la ruta de la máscara a partir del ID de la célula
+    const maskPath = `/uploads/{{ classification_name }}/preprocessed/${cellId}`;
+
+    // 2. Cargar la máscara en un nuevo objeto Image
+    const maskImage = new Image();
+    maskImage.src = maskPath;
+
+    // 3. Esperar a que la máscara se cargue
+    maskImage.onload = () => {
+      // 4. Obtener el canvas de la máscara y su contexto
+      const maskCanvas = document.getElementById('mask-canvas');
+      const maskContext = maskCanvas.getContext('2d');
+      maskCanvas.width = maskImage.width;
+      maskCanvas.height = maskImage.height;
+
+      // 5. Dibujar la máscara en el canvas
+      maskContext.drawImage(maskImage, 0, 0);
+
+      // 6. Obtener los datos de los píxeles de la máscara
+      const maskImageData = maskContext.getImageData(
+        0,
+        0,
+        maskCanvas.width,
+        maskCanvas.height
+      );
+      const maskData = maskImageData.data;
+
+      // 7. Obtener el canvas de la imagen original y su contexto
+      const mainImageCanvas = document.getElementById('main-image-canvas');
+      const mainImageContext = mainImageCanvas.getContext('2d');
+
+       // 8. Volver a dibujar la imagen ORIGINAL en el canvas
+       mainImageContext.drawImage(originalImage, 0, 0, mainImageCanvas.width, mainImageCanvas.height); 
+
+      // 9. Obtener los datos de los píxeles de la imagen original (ya con la imagen original limpia)
+      const mainImageData = mainImageContext.getImageData(
+        0,
+        0,
+        mainImageCanvas.width,
+        mainImageCanvas.height
+      );
+      const mainData = mainImageData.data;
+
+      // 10. Iterar sobre los píxeles de la máscara
+      for (let i = 0; i < maskData.length; i += 4) {
+        // 11. Si el pixel de la máscara es blanco (representando la célula)...
+        if (
+          maskData[i] === 255 &&
+          maskData[i + 1] === 255 &&
+          maskData[i + 2] === 255
+        ) {
+          // ...pintar el pixel correspondiente en la imagen original de rojo
+          mainData[i] = 255; // R
+          mainData[i + 1] = 0; // G
+          mainData[i + 2] = 0; // B
+        }
+      }
+
+      // 12. Actualizar la imagen original en el canvas con los datos modificados
+      mainImageContext.putImageData(mainImageData, 0, 0);
+    };
+  }
+});      
+
+    
+    </script>
+  </body>
+</html>

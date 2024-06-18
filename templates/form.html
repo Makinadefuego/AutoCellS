@@ -1,30 +1,117 @@
-<!-- Formulario para enviar la imagen o carpeta -->
-<form class="" action="/upload" method="post" enctype="multipart/form-data">
 
-    <div class="mb-3">
-        <label for="classification_name">Nombre tu clasificación:</label>
-        <input  class="form-control" type="text" name="classification_name">
-    
-    </div>
+<div class="container mt-5">
+    <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
+    <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
 
-    <div class="mb-3">
-        <label for="file">Selecciona tus imagenes:</label>
-        <input class="form-control" type="file" name="file" multiple>
-    
-    </div>
 
-    <div class="mb-3">
-        <label for="model_name">Selecciona el modelo:</label>
-        <select name="model_name" class="form-control">
-            <option value="resnet50">ResNet50</option>
-            <option value="vgg16">VGG16</option>
-            <option value="inception_v3">InceptionV3</option>
-        </select>
+
+    <div id="overlay" class="overlay" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-2" style="color: antiquewhite;">Procesando imágenes, espere por favor...</p>
     </div>
 
 
-    <div class="mb-3">
-        <button class="btn btn-primary" type="submit" value="upload">Enviar</button>
+
+    <h2 class="text-center mb-4" style="color: var(--primario);">Sube tus Imágenes para Segmentación</h2>
+
+    <div class="row" background-color="var(--fondo)">
+        <div class="col-md-8 offset-md-2"> <!--- Centrar el formulario --->
+            <form action="/handle_upload" method="post" class="dropzone rounded-lg" id="myDropzone">
+                <div class="form-row"> <!--- Usar form-row para alinear elementos en fila --->
+                    <div class="form-group col-md-6">
+                        <label for="nombre_clasificacion" class="form-label" style="color: var(--texto-oscuro);"
+                            id="nombre_clasificacion" aria-required="true">Nombre de la Clasificación:</label>
+                        <input type="text" class="form-control" id="nombre_clasificacion_input"
+                            name="nombre_clasificacion" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="model" class="form-label" style="color: var(--texto-oscuro);">Selecciona el
+                            modelo:</label>
+                        <select class="form-control" id="model" name="model" required>
+                            <option value="vicia_faba_07">Vicia Faba 07</option>
+                            <option value="otro_modelo">Otro Modelo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3">
+                    <button type="submit" class="btn btn-primary">Subir y Procesar</button>
+                </div>
+            </form>
+        </div>
     </div>
 
-</form>
+    <div class="row mt-3">
+        <div class="col-md-2 offset-md-5 text-center">
+            <a href="/myclassifications" class="btn btn-secondary btn-block">Ver mis clasificaciones</a>
+        </div>
+    </div>
+    <script>
+        Dropzone.options.myDropzone = {
+            paramName: "file",
+            maxFilesize: 16, // MB
+            acceptedFiles: ".png,.jpg,.jpeg,.tiff",
+            autoProcessQueue: false,
+            addRemoveLinks: true,
+            dictRemoveFile: "Eliminar",
+            dictDefaultMessage: "Arrastra tus imágenes aquí o haz clic para seleccionarlas",
+            parallelUploads: 100,
+
+
+            init: function () {
+                var myDropzone = this;
+                var submitButton = document.querySelector("button[type=submit]");
+
+                submitButton.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    //Se verifica que existe el nombre de la clasificación
+                    console.log(document.getElementById("nombre_clasificacion_input").value);
+
+                    if (myDropzone.getQueuedFiles().length > 0) {
+                        document.getElementById("overlay").style.display = "flex"; // Mostrar la pantalla de carga myDropzone.processQueue();
+                        myDropzone.processQueue();
+                    } else {
+                        alert("Por favor, selecciona al menos una imagen para subir.");
+                    }
+                });
+
+                this.on("sending", function (data, xhr, formData) {
+                    formData.append("nombre_clasificacion", document.getElementById("nombre_clasificacion_input").value);
+                    formData.append("model", document.getElementById("model").value);
+
+                    //Deshabilitar todo oara evitar que se suban más imágenes
+                    myDropzone.options.autoProcessQueue = true;
+                    submitButton.disabled = true;
+                    document.getElementById("nombre_clasificacion").disabled = true;
+                    document.getElementById("model").disabled = true;
+
+
+                });
+
+                this.on("success", function (file, response) {
+                    // Eliminar la redirección de este evento 
+                });
+
+                this.on("queuecomplete", function () {
+                    // Redirigir cuando la cola se haya procesado completamente
+                    document.getElementById("overlay").style.display = "none"; // Ocultar la pantalla de carga
+                    console.log("Todas las imágenes se han subido.");
+                    setTimeout(() => {
+                        window.location.href = "/myclassifications";
+                    }, 1000);
+                });
+
+
+                // Manejar errores de subida
+                this.on("error", function (file, response) {
+                    alert("Ocurrió un error al subir el archivo. Por favor, inténtalo de nuevo.");
+                });
+            }
+        };
+
+    </script>
+</div>
+

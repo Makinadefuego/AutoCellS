@@ -14,9 +14,24 @@
 
 </head>
 <body>
-    {% include 'navbar.html' %}
-    <div class="container">
-        {% include 'form.html' %}
+{% include 'navbar.html' %}
+    <div class="container mt-5">
+        <h2>Mis Clasificaciones</h2>
+        <ul class="list-group">
+            {% for classification in classifications %}
+            <li class="list-group-item">
+                <li class="list-group-item">
+                    
+                        {{ classification }}
+                    
+                    <!-- Agrega el nuevo enlace -->
+                    <a href="{{ url_for('clasificacion_interactiva', classification_name=classification) }}" class="btn btn-sm btn-secondary">
+                        Ver detalles
+                    </a>
+                </li>
+            </li>
+            {% endfor %}
+        </ul>
     </div>
     
     <!-- Bootstrap JS -->

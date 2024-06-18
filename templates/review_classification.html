@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Revisión de Clasificación: {{ classification_name }}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- CSS personalizado (opcional) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* Estilos para la cuadrícula de miniaturas */
+        .thumbnail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            /* Ajusta el tamaño mínimo según sea necesario */
+            gap: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    {% include 'navbar.html' %}
+
+    <div class="container mt-5">
+        <h2>Revisión de Clasificación: {{ classification_name }}</h2>
+
+        <div class="row">
+            <div class="col-md-3"> <!-- Columna para "Img n" -->
+                <h4>Imágenes</h4>
+                <div class="thumbnail-grid" id="image-thumbnails">
+                    {% for cell_filename in classification_data.keys() %}
+                    <img src="{{ url_for('uploaded_file', classification_name=classification_name, filename='preprocessed/' + cell_filename) }}"
+                    alt="{{ cell_filename }}" class="img-fluid rounded thumbnail"
+                        data-filename="{{ cell_filename }}">
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="col-md-6"> <!-- Columna para la imagen seleccionada -->
+                <img id="selected-image" src="" alt="Imagen seleccionada" class="img-fluid rounded">
+            </div>
+
+            <div class="col-md-3"> <!-- Columna para la tabla -->
+                <h4>Detalles</h4>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Propiedad</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Aquí se llenarán los detalles con JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+    <script>
+        // JavaScript para manejar la selección de miniaturas y actualizar la interfaz
+        const thumbnails = document.querySelectorAll('.thumbnail');
+        const selectedImage = document.getElementById('selected-image');
+        const imageDetailsTable = document.querySelector('.table tbody');
+        const imageDetails = JSON.parse('{{ classification_data | tojson | safe }}');
+        thumbnails.forEach(thumbnail => {
+            thumbnail.addEventListener('click', () => {
+                const filename = thumbnail.dataset.filename;
+                const imagePath = thumbnail.src;
+
+                // Actualizar la imagen seleccionada
+                selectedImage.src = imagePath;
+
+                // Obtener los detalles de la imagen seleccionada
+                
+                const cellClass = imageDetails[filename]; 
+
+
+                // Limpiar la tabla
+                imageDetailsTable.innerHTML = '';
+
+                // Llenar la tabla con los detalles de la imagen seleccionada
+                for (const [property, value] of Object.entries(imageDetails)) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${property}</td>
+                        <td>${value}</td>
+                    `;
+                    imageDetailsTable.appendChild(row);
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
+
