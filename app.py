@@ -60,6 +60,10 @@ app = Flask(__name__)
 app.config.from_pyfile('config.py')
 
 UPLOAD_FOLDER = 'uploads'
+
+# Se crea el directorio de subida si no existe
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'tiff'}
 
 # Las clases de células son las siguientes:
