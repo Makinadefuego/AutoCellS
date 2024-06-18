@@ -3,6 +3,7 @@ from tensorflow.keras.preprocessing import image
 import numpy as np
 import os
 
+
 # Verificar el directorio actual
 current_directory = os.getcwd()
 print(f"Directorio actual: {current_directory}")
@@ -27,8 +28,6 @@ try:
     print(f"Modelo cargado correctamente desde {model_path}")
 except ValueError as e:
     print(f"Error al cargar el modelo: {str(e)}")
-
-print(modelo_clasificacion)
 img_width, img_height = 256, 256
 
 def clasificar_celula(imagen_path):
