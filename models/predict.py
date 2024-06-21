@@ -6,8 +6,6 @@ from tensorflow.keras.preprocessing import image
 from PIL import Image 
 from skimage import io
 import json
-
-
 def segment_image(image_path, model):
     use_GPU = core.use_gpu()
     yn = ['NO', 'YES']
@@ -24,6 +22,8 @@ def segment_image(image_path, model):
     print(f"Loaded image dtype: {image.dtype}")
 
     # Cargar el modelo de CNN 
+        # Llama al script de fusión antes de cargar el modelo
+    merge_files('best_model_part', 'models/best_model.keras')
     # (adapta la ruta a tu modelo)
     model = load_model('app/models/best_model.keras ')
 
