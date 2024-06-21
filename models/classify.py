@@ -5,8 +5,8 @@ from keras.preprocessing import image
 import numpy as np
 import os
 
-
-modelo_clasificacion = load_model('/Users/makinadefuego/autocells/models/best_model.keras') 
+model_path = "models/best_model.keras"
+modelo_clasificacion = load_model(model_path)
 
 print(modelo_clasificacion)
 img_width, img_height = 256, 256

@@ -1,55 +1,12 @@
+from models.download_model import download_model
 import os
-import boto3
-from botocore.exceptions import NoCredentialsError, PartialCredentialsError
-
-S3_BUCKET = 'autocellsstorage'
-S3_KEY = 'best_model.keras'
-LOCAL_FILE_PATH = 'models/best_model.keras'
-# Función para listar archivos en un directorio
-def list_files_in_directory(directory):
-    try:
-        files = os.listdir(directory)
-        print(f"Archivos en el directorio {directory}: {files}")
-    except FileNotFoundError:
-        print(f"El directorio {directory} no existe.")
-    except Exception as e:
-        print(f"Error al listar archivos en {directory}: {str(e)}")
-
-
-# Descargar el archivo desde S3 si no está presente localmente
-def download_file_from_s3(bucket, key, local_path):
-    s3 = boto3.client('s3', aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'), aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'))
-    try:
-        if not os.path.exists(local_path):
-            os.makedirs(os.path.dirname(local_path), exist_ok=True)
-            s3.download_file(bucket, key, local_path)
-            print(f"Archivo descargado desde S3: {local_path}")
-        else:
-            print(f"Archivo ya existe: {local_path}")
-    except NoCredentialsError:
-        print("Error: No se encontraron credenciales de AWS.")
-    except PartialCredentialsError:
-        print("Error: Credenciales incompletas de AWS.")
-    except Exception as e:
-        print(f"Error al descargar el archivo: {str(e)}")
-
-# Descargar el archivo antes de que cualquier otro código lo necesite
-download_file_from_s3(S3_BUCKET, S3_KEY, LOCAL_FILE_PATH)
-
-# Listar archivos en el directorio actual y en el directorio de modelos
-list_files_in_directory('.')
-list_files_in_directory('models')
-
-
-# Asegurarse de que el archivo existe
-if not os.path.exists(LOCAL_FILE_PATH):
-    print(f"Error: el archivo {LOCAL_FILE_PATH} no existe después de la descarga")
-else:
-    print(f"El archivo {LOCAL_FILE_PATH} está presente")
+# Descarga el modelo si no existe
+if not os.path.exists('models/best_model.keras'):
+    download_model('11Bm8H_ai-Gra_zwJWQP05baIumX-KtcN', 'models/best_model.keras')
+    
 
 from flask import Flask, request, render_template, redirect, url_for, send_from_directory, flash, jsonify
 from werkzeug.utils import secure_filename
-import os
 import json
 from models.predict import segment_image
 from models.preprocess import preprocess_images
@@ -128,9 +85,11 @@ def handle_upload():
                 # Obtener la imagen original a la que pertenece la célula (nombre de la imagen sin incluir el número de célula (_#))
                 original_image = cell_filename.split('_')[:-1]
 
+                #Las imágenes siempre llevaran al último _#CELL.png, por lo que el id sera el #CELL
+
                 # Añadir la información de la clase y la imagen original
                 cell_classes[cell_filename] = {
-                    'id': cell_filename.split('_')[2].split('.')[0],
+                    'id': cell_filename.split('_')[-1].split('.')[0],
                     'class': cell_class,
                     'original_image': original_image
                 }
@@ -237,4 +196,6 @@ def clasificacion_interactiva(classification_name):
                             original_images=original_images)
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5800)))
+     # Fusiona los archivos del modelo al inicio
+    
+    app.run(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 5800)))
