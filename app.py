@@ -1,8 +1,10 @@
 from models.download_model import download_model
 import os
 # Descarga el modelo si no existe
-if not os.path.exists('app/models/best_model.keras'):
-    download_model('11Bm8H_ai-Gra_zwJWQP05baIumX-KtcN', 'app/models/best_model.keras')
+if not os.path.exists('/models/best_model.keras'):
+    download_model('11Bm8H_ai-Gra_zwJWQP05baIumX-KtcN', '/models/best_model.keras')
+    print('Modelo descargado exitosamente')
+
     
 
 from flask import Flask, request, render_template, redirect, url_for, send_from_directory, flash, jsonify
