@@ -4,12 +4,13 @@ from keras.models import Sequential, load_model
 from keras.preprocessing import image
 import numpy as np
 import os
-
-model_path = "app/models/best_model.keras"
-modelo_clasificacion = load_model(model_path)
-
-print(modelo_clasificacion)
-img_width, img_height = 256, 256
+try:
+    model_path = "app/models/best_model.keras"
+    modelo_clasificacion = load_model(model_path)
+    print(modelo_clasificacion)
+except Exception as e:
+    print(f"Error al cargar el modelo: {e}")
+    
 
 def clasificar_celula(imagen_path):
     img_width, img_height = 256, 256
