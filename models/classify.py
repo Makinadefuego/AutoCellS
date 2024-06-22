@@ -5,7 +5,7 @@ from keras.preprocessing import image
 import numpy as np
 import os
 try:
-    model_path = "/models/best_model.keras"
+    model_path = "./models/best_model.keras"
     modelo_clasificacion = load_model(model_path)
     print(modelo_clasificacion)
 except Exception as e:

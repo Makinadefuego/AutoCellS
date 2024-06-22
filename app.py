@@ -4,11 +4,11 @@ import os
 
 
 # Descarga el modelo si no existe
-if not os.path.exists('/models/best_model.keras'):
+if not os.path.exists('./models/best_model.keras'):
 
     print('Descargando modelo, estamos en :', os.getcwd())
-    print('Se guardará en:', '/models/best_model.keras')
-    download_model('11Bm8H_ai-Gra_zwJWQP05baIumX-KtcN', '/models/best_model.keras')
+    print('Se guardará en:', './models/best_model.keras')
+    download_model('11Bm8H_ai-Gra_zwJWQP05baIumX-KtcN', './models/best_model.keras')
     print('Modelo descargado exitosamente')
 
     
