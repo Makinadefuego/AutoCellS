@@ -4,6 +4,11 @@ from keras.models import Sequential, load_model
 from keras.preprocessing import image
 import numpy as np
 import os
+
+
+
+print("Directorio de trabajo actual (classify.py):", os.getcwd())
+
 try:
     model_path = "./models/best_model.keras"
     modelo_clasificacion = load_model(model_path)

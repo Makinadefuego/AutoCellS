@@ -1,15 +1,20 @@
 from models.download_model import download_model
 import os
 
+print("Directorio de trabajo actual (app.py):", os.getcwd())
 
 
+model_id = "11Bm8H_ai-Gra_zwJWQP05baIumX-KtcN"
 # Descarga el modelo si no existe
 if not os.path.exists('./models/best_model.keras'):
 
     print('Descargando modelo, estamos en :', os.getcwd())
     print('Se guardará en:', './models/best_model.keras')
-    download_model('11Bm8H_ai-Gra_zwJWQP05baIumX-KtcN', './models/best_model.keras')
+    download_model(model_id, './models/best_model.keras')
     print('Modelo descargado exitosamente')
+
+else:
+    print('El modelo ya existe, no es necesario descargarlo')
 
     
 
