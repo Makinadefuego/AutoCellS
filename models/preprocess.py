@@ -5,8 +5,14 @@ import cv2
 
 ALLOWED_EXTENSIONS = ('.png', '.jpg', '.jpeg', '.tiff')
 TARGET_SIZE = (256, 256)  # Tamaño fijo para las imágenes de salida
-
+control = False
 def preprocess_images(images_dir):
+    global control
+    if control:
+        print(f"Preprocesamiento ya realizado para {images_dir}. Saltando...")
+        return
+    control = True
+
     # Obtener los nombres de los archivos de imagen y máscara
     image_files = {os.path.splitext(f)[0]: os.path.join(images_dir, f) for f in os.listdir(images_dir) if f.endswith(ALLOWED_EXTENSIONS)}
     mask_files = [os.path.join(images_dir, f) for f in os.listdir(images_dir) if f.endswith('_seg.npy')]
@@ -79,6 +85,7 @@ def preprocess_images(images_dir):
             print(f"Error procesando la máscara {mask_file}: {e}")
 
     print("Preprocesamiento y división de datos completados")
+    control = False
     return output_folder
 
 if __name__ == '__main__':

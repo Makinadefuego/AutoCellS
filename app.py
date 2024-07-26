@@ -26,10 +26,14 @@ from models.preprocess import preprocess_images
 from models.segmentation import segment_dataset
 from models.classify import clasificar_celula  
 
+control = False
+
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
 
 UPLOAD_FOLDER = 'uploads'
+
+
 
 # Se crea el directorio de subida si no existe
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -59,7 +63,9 @@ def handle_upload():
         flash('No file part')
         return redirect(request.url)
 
-    file = request.files['file']
+    files = request.files.getlist('file')  # Obtener todos los archivos subidos
+    print("Esta es la lista de archivos")
+    print(files)
     nombre_clasificacion = request.form.get('nombre_clasificacion')
     model = request.form.get('model')
 
@@ -72,51 +78,71 @@ def handle_upload():
 
     print(f'Classification folder created: {classification_folder}')
 
-    if file.filename == '':
-        flash('No selected file')
-        return redirect(request.url)
+    for file in files:
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
 
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(classification_folder, filename))
-        print(f'File saved as {filename}')
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(classification_folder, filename))
+            print(f'File saved as {filename}')
+        else:
+            flash('Invalid file extension')
+            return redirect(request.url)
+
+    # Ejecutar el procesamiento una vez que todos los archivos se hayan guardado
+    # No se ejecutará si ya se ha procesado la clasificación
+    
+    
+    
+
+    try:
         # Ejecuta la segmentación:
         segment_dataset(classification_folder)
         
         # Ejecuta el preprocesamiento:
         preprocess_images(classification_folder)
 
-        # Ejecuta la clasificación:
-        cells_dir = os.path.join(classification_folder, 'preprocessed')
-        cell_classes = {}
+        global control
 
-        for cell_filename in os.listdir(cells_dir):
-            if allowed_file(cell_filename):
-                cell_path = os.path.join(cells_dir, cell_filename)
-                cell_class = clasificar_celula(cell_path)
+        if not control:
+            control = True
+            # Ejecuta la clasificación:
+            cells_dir = os.path.join(classification_folder, 'preprocessed')
+            cell_classes = {}
 
-                # Obtener la imagen original a la que pertenece la célula (nombre de la imagen sin incluir el número de célula (_#))
-                original_image = cell_filename.split('_')[:-1]
+            for cell_filename in os.listdir(cells_dir):
+                if allowed_file(cell_filename):
+                    cell_path = os.path.join(cells_dir, cell_filename)
+                    cell_class = clasificar_celula(cell_path)
 
-                #Las imágenes siempre llevaran al último _#CELL.png, por lo que el id sera el #CELL
+                    # Obtener la imagen original a la que pertenece la célula (nombre de la imagen sin incluir el número de célula (_#))
+                    original_image = cell_filename.split('_')[:-1]
 
-                # Añadir la información de la clase y la imagen original
-                cell_classes[cell_filename] = {
-                    'id': cell_filename.split('_')[-1].split('.')[0],
-                    'class': cell_class,
-                    'original_image': original_image
-                }
+                    # Las imágenes siempre llevaran al último _#CELL.png, por lo que el id sera el #CELL
 
-        # Guardar la clasificación en un archivo JSON
-        classification_json_path = os.path.join(classification_folder, 'classification.json')
-        with open(classification_json_path, 'w') as f:
-            json.dump(cell_classes, f)
-    else:
-        flash('Invalid file extension')
+                    # Añadir la información de la clase y la imagen original
+                    cell_classes[cell_filename] = {
+                        'id': cell_filename.split('_')[-1].split('.')[0],
+                        'class': cell_class,
+                        'original_image': original_image
+                    }
+
+            # Guardar la clasificación en un archivo JSON
+            classification_json_path = os.path.join(classification_folder, 'classification.json')
+            with open(classification_json_path, 'w') as f:
+                json.dump(cell_classes, f)
+
+            flash('Files successfully uploaded and processed')
+            control = False
+    except Exception as e:
+        flash(f'Error during processing: {str(e)}')
         return redirect(request.url)
 
-    flash('File successfully uploaded')
     return redirect(url_for('my_classifications'))
+
+
 
 @app.route('/myclassifications')
 def my_classifications():
@@ -208,7 +234,22 @@ def clasificacion_interactiva(classification_name):
                            classification=classification_data,
                             original_images=original_images)
 
+# Rutas de la API
+
+@app.route('/api/segmented-images/<classification_name>')
+def get_segmented_images(classification_name):
+    classification_folder = os.path.join(app.config['UPLOAD_FOLDER'], classification_name)
+    images = [f for f in os.listdir(classification_folder) if allowed_file(f)]
+    return jsonify(images)
+
+@app.route('/api/classification-data/<classification_name>')
+def get_classification_data(classification_name):
+    classification_folder = os.path.join(app.config['UPLOAD_FOLDER'], classification_name)
+    json_path = os.path.join(classification_folder, "classification.json")
+    with open(json_path, 'r') as f:
+        classification_data = json.load(f)
+    return jsonify(classification_data)
+
+
 if __name__ == "__main__":
-     # Fusiona los archivos del modelo al inicio
-    
-    app.run(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 5800)))
+    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5800)))
